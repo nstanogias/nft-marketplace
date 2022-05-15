@@ -1,19 +1,18 @@
 import React, { useEffect, useState, useMemo } from 'react'
 import { useRouter } from 'next/router'
-import { useWeb3 } from '@3rdweb/hooks'
 import { client } from '../../lib/sanityClient'
-import {
-  AuctionListing,
-  DirectListing,
-  NFTMetadata,
-  ThirdwebSDK,
-} from '@3rdweb/sdk'
 import Header from '../../components/Header'
 import { CgWebsite } from 'react-icons/cg'
 import { AiOutlineInstagram, AiOutlineTwitter } from 'react-icons/ai'
 import { HiDotsVertical } from 'react-icons/hi'
 import NFTCard from '../../components/NFTCard'
 import { ICollection } from '../../types/types'
+import { useMarketplace, useNFTCollection } from '@thirdweb-dev/react'
+import {
+  AuctionListing,
+  DirectListing,
+  NFTMetadataOwner,
+} from '@thirdweb-dev/sdk'
 
 const style = {
   bannerImageContainer: `h-[20vh] w-screen overflow-hidden flex justify-center items-center`,
@@ -39,55 +38,37 @@ const style = {
 
 const Collection = () => {
   const router = useRouter()
-  const { provider } = useWeb3()
   const { collectionId } = router.query
   const [collection, setCollection] = useState<ICollection | null>(null)
-  const [nfts, setNfts] = useState<NFTMetadata[]>([])
+  const [nfts, setNfts] = useState<NFTMetadataOwner[]>([])
   const [listings, setListings] = useState<(AuctionListing | DirectListing)[]>(
     []
   )
 
-  //
-
-  const nftModule = useMemo(() => {
-    if (!provider) return
-
-    const sdk = new ThirdwebSDK(provider.getSigner(), {
-      ipfsGatewayUrl:
-        'https://eth-rinkeby.alchemyapi.io/v2/RdSFX8ZHXx-mqt3wFJ8FCZpbo2Fx6iQJ',
-    })
-    return sdk.getNFTModule(collectionId as string)
-  }, [provider])
+  const marketplace = useMarketplace(
+    '0xad95862659dF37d05B942d502f02F724a49B636a'
+  )
+  const nftCollection = useNFTCollection(
+    '0xD38DDD47d3A23D053fE0E90178a94f5cEa1B33b7'
+  )
 
   // get all NFTs in the collection
   useEffect(() => {
-    if (!nftModule) return
+    if (!nftCollection) return
     ;(async () => {
-      const nfts = await nftModule.getAll()
-
+      const nfts = await nftCollection.getAll()
+      console.log(nfts)
       setNfts(nfts)
     })()
-  }, [nftModule])
-
-  const marketPlaceModule = useMemo(() => {
-    if (!provider) return
-
-    const sdk = new ThirdwebSDK(provider.getSigner(), {
-      ipfsGatewayUrl:
-        'https://eth-rinkeby.alchemyapi.io/v2/RdSFX8ZHXx-mqt3wFJ8FCZpbo2Fx6iQJ',
-    })
-    return sdk.getMarketplaceModule(
-      '0xad95862659dF37d05B942d502f02F724a49B636a'
-    )
-  }, [provider])
+  }, [nftCollection])
 
   // get all listings in the collection
   useEffect(() => {
-    if (!marketPlaceModule) return
+    if (!marketplace) return
     ;(async () => {
-      setListings(await marketPlaceModule.getAllListings())
+      setListings(await marketplace.getAllListings())
     })()
-  }, [marketPlaceModule])
+  }, [marketplace])
 
   const fetchCollectionData = async (sanityClient = client) => {
     const query = `*[_type == "marketItems" && contractAddress == "${collectionId}" ] {
@@ -218,7 +199,7 @@ const Collection = () => {
         {nfts.map((nftItem, id) => (
           <NFTCard
             key={id}
-            nftItem={nftItem}
+            nftItem={nftItem.metadata}
             title={collection?.title}
             listings={listings}
           />
