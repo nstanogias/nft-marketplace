@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useRouter } from 'next/router'
 import { client } from '../../lib/sanityClient'
 import Header from '../../components/Header'
@@ -57,7 +57,6 @@ const Collection = () => {
     if (!nftCollection) return
     ;(async () => {
       const nfts = await nftCollection.getAll()
-      console.log(nfts)
       setNfts(nfts)
     })()
   }, [nftCollection])
@@ -85,8 +84,6 @@ const Collection = () => {
 
     const collectionData = await sanityClient.fetch(query)
 
-    console.log(collectionData, '🔥')
-
     // the query returns 1 object inside of an array
     await setCollection(collectionData[0])
   }
@@ -95,8 +92,6 @@ const Collection = () => {
     fetchCollectionData()
   }, [collectionId])
 
-  console.log(router.query)
-  console.log(router.query.collectionId)
   return (
     <div className="overflow-hidden">
       <Header />
