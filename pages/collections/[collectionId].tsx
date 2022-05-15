@@ -57,7 +57,11 @@ const Collection = () => {
     if (!nftCollection) return
     ;(async () => {
       const nfts = await nftCollection.getAll()
-      setNfts(nfts)
+      setNfts(
+        nfts.filter(
+          (nft) => nft.owner !== '0x0000000000000000000000000000000000000000'
+        )
+      )
     })()
   }, [nftCollection])
 
