@@ -48,6 +48,7 @@ const Collection = () => {
   const marketplace = useMarketplace(
     '0xad95862659dF37d05B942d502f02F724a49B636a'
   )
+
   const nftCollection = useNFTCollection(
     '0xD38DDD47d3A23D053fE0E90178a94f5cEa1B33b7'
   )
